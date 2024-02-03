@@ -21,8 +21,6 @@ Future<List<String>> getRegisteredUsers() async {
   return prefs.getStringList('registered_users') ?? [];
 }
 
-bool notFocused = true;
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -44,6 +42,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool notFocused = true;
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -71,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (context) {
           return const Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(color: Colors.blue,),
           );
         },
       );
@@ -119,7 +118,6 @@ class _LoginPageState extends State<LoginPage> {
   List<String> registeredUsers = [];
   @override
   Widget build(BuildContext context) {
-    notFocused = !notFocused;
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -132,18 +130,37 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 30,bottom:50 ),
-                      child: Center(child: Image.asset("assets/images/bowen.png",height:100,)),
+                      padding: const EdgeInsets.only(top: 30, bottom: 50),
+                      child: Center(
+                          child: Image.asset(
+                        "assets/images/bowen.png",
+                        height: 100,
+                      )),
                     ),
-                    Center(
+                    Focus(
+                      onFocusChange: (hasFocus) {
+                        setState(() {
+                          notFocused = !hasFocus;
+                        });
+                      },
                       child: TextFormField(
+                        style: TextStyle(
+                            color: notFocused ? Colors.black : Colors.blue),
                         controller: usernameController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Matric Number',
-                          
+                          focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.blue)),
+                          labelStyle: TextStyle(
+                            color: notFocused ? Colors.black : Colors.blue,
+                            fontWeight: notFocused
+                                ? FontWeight.normal
+                                : FontWeight.bold,
+                          ),
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp('[a-zA-Z0-9]')),
                         ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -184,7 +201,12 @@ class _LoginPageState extends State<LoginPage> {
                         _login();
                       },
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(left: 50,right: 50,top: 15,bottom:15,),
+                        padding: const EdgeInsets.only(
+                          left: 50,
+                          right: 50,
+                          top: 15,
+                          bottom: 15,
+                        ),
                         foregroundColor: Colors.white,
                         backgroundColor: Colors.blue,
                       ),
@@ -236,6 +258,7 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String errorText = '';
+  bool notFocused = true;
 
   Future<void> _saveRegisteredUsers() async {
     final prefs = await SharedPreferences.getInstance();
@@ -305,23 +328,32 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              TextFormField(
-                controller: matricNumberController,
-                decoration: const InputDecoration(
-                  labelText: 'Matric Number',
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
-                ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your matric number';
-                  }
-                  if (value.length < 11 || value.length > 11) {
-                    return 'Matric number must be 11 characters or less';
-                  }
-                  return null;
+              Focus(
+                onFocusChange: (hasFocus) {
+                  setState(() {
+                    notFocused = !hasFocus;
+                  });
                 },
+                child: TextFormField(
+                  style: TextStyle(color: notFocused? Colors.black : Colors.blue),
+                  controller: matricNumberController,
+                  decoration:  InputDecoration(
+                    labelText: 'Matric Number',
+                    labelStyle: TextStyle(color: notFocused? Colors.black : Colors.blue)
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                  ],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your matric number';
+                    }
+                    if (value.length < 11 || value.length > 11) {
+                      return 'Matric number must be 11 characters or less';
+                    }
+                    return null;
+                  },
+                ),
               ),
               PasswordField(
                 controller: passwordController,
