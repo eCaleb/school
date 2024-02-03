@@ -21,18 +21,16 @@ Future<List<String>> getRegisteredUsers() async {
   return prefs.getStringList('registered_users') ?? [];
 }
 
+bool notFocused = true;
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const LoginPage(),
+      home: LoginPage(),
     );
   }
 }
@@ -101,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
           // If no matching user is found, dismiss the loading indicator and update the error text
           Navigator.of(context).pop();
           setState(() {
-            errorText = 'Login failed. Please correct the input fields.';
+            errorText = "Account doesn't exist, please register.";
             usernameController.clear();
             passwordController.clear();
           });
@@ -112,99 +110,110 @@ class _LoginPageState extends State<LoginPage> {
 
         // Update error text
         setState(() {
-          errorText =
-              'Login failed. Please correct the input fields or register if you are new.';
+          errorText = "Account doesn't exist, please register.";
         });
       }
     }
   }
 
+  List<String> registeredUsers = [];
+  bool notFocused = true;
   @override
+  
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              TextFormField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Matric Number',
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+        child: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextFormField(
+                                        controller: usernameController,
+                    decoration:  InputDecoration(
+                      
+                      labelText: 'Matric Number',
+                      labelStyle: TextStyle(
+                          color: !notFocused ? Colors.black : Colors.blue),
+                      focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue)),
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        usernameController.clear();
+                        return 'Please enter your matric number';
+                      }
+                      if (value.length < 11 || value.length > 11) {
+                        usernameController.clear();
+                        return 'Matric number must be 11 characters or less';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  PasswordField(
+                    controller: passwordController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        passwordController.clear();
+                        return 'Please enter your password';
+                      }
+                      if (value.length < 8) {
+                        passwordController.clear();
+                        return 'Password must be at least 8 characters';
+                      }
+                      if (!value.contains(RegExp(r'[A-Za-z]')) ||
+                          !value.contains(RegExp(r'\d'))) {
+                        passwordController.clear();
+                        return 'Password must include both letters and numbers';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      _login();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text('Login'),
+                  ),
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RegisterPage()),
+                      ).then((value) {
+                        setState(() {
+                          errorText = '';
+                        });
+                      });
+                    },
+                    child: const Text(
+                      'Don\'t have an account? Register',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                  if (errorText.isNotEmpty)
+                    Text(
+                      errorText,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                 ],
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    usernameController.clear();
-                    return 'Please enter your matric number';
-                  }
-                  if (value.length < 11 || value.length > 11) {
-                    usernameController.clear();
-                    return 'Matric number must be 11 characters or less';
-                  }
-                  return null;
-                },
               ),
-              const SizedBox(height: 20),
-              PasswordField(
-                controller: passwordController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    passwordController.clear();
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 8) {
-                    passwordController.clear();
-                    return 'Password must be at least 8 characters';
-                  }
-                  if (!value.contains(RegExp(r'[A-Za-z]')) ||
-                      !value.contains(RegExp(r'\d'))) {
-                    passwordController.clear();
-                    return 'Password must include both letters and numbers';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _login();
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                ),
-                child: const Text('Login'),
-              ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  // Navigate to register page
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegisterPage()),
-                  );
-                },
-                child: const Text(
-                  'Don\'t have an account? Register',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-              if (errorText.isNotEmpty)
-                Text(
-                  errorText,
-                  style: const TextStyle(color: Colors.red),
-                ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
