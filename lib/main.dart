@@ -117,103 +117,107 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   List<String> registeredUsers = [];
-  bool notFocused = true;
   @override
-  
   Widget build(BuildContext context) {
+    notFocused = !notFocused;
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  TextFormField(
-                                        controller: usernameController,
-                    decoration:  InputDecoration(
-                      
-                      labelText: 'Matric Number',
-                      labelStyle: TextStyle(
-                          color: !notFocused ? Colors.black : Colors.blue),
-                      focusedBorder: const UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.blue)),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30,bottom:50 ),
+                      child: Center(child: Image.asset("assets/images/bowen.png",height:100,)),
                     ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
-                    ],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        usernameController.clear();
-                        return 'Please enter your matric number';
-                      }
-                      if (value.length < 11 || value.length > 11) {
-                        usernameController.clear();
-                        return 'Matric number must be 11 characters or less';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  PasswordField(
-                    controller: passwordController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        passwordController.clear();
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 8) {
-                        passwordController.clear();
-                        return 'Password must be at least 8 characters';
-                      }
-                      if (!value.contains(RegExp(r'[A-Za-z]')) ||
-                          !value.contains(RegExp(r'\d'))) {
-                        passwordController.clear();
-                        return 'Password must include both letters and numbers';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      _login();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.blue,
+                    Center(
+                      child: TextFormField(
+                        controller: usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Matric Number',
+                          
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                        ],
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            usernameController.clear();
+                            return 'Please enter your matric number';
+                          }
+                          if (value.length < 11 || value.length > 11) {
+                            usernameController.clear();
+                            return 'Matric number must be 11 characters or less';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                    child: const Text('Login'),
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegisterPage()),
-                      ).then((value) {
-                        setState(() {
-                          errorText = '';
+                    const SizedBox(height: 20),
+                    PasswordField(
+                      controller: passwordController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          passwordController.clear();
+                          return 'Please enter your password';
+                        }
+                        if (value.length < 8) {
+                          passwordController.clear();
+                          return 'Password must be at least 8 characters';
+                        }
+                        if (!value.contains(RegExp(r'[A-Za-z]')) ||
+                            !value.contains(RegExp(r'\d'))) {
+                          passwordController.clear();
+                          return 'Password must include both letters and numbers';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        _login();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.only(left: 50,right: 50,top: 15,bottom:15,),
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                      ),
+                      child: const Text('Login'),
+                    ),
+                    const SizedBox(height: 20),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterPage()),
+                        ).then((value) {
+                          setState(() {
+                            errorText = '';
+                          });
                         });
-                      });
-                    },
-                    child: const Text(
-                      'Don\'t have an account? Register',
-                      style: TextStyle(color: Colors.blue),
+                      },
+                      child: const Text(
+                        'Don\'t have an account? Register',
+                        style: TextStyle(color: Colors.blue),
+                      ),
                     ),
-                  ),
-                  if (errorText.isNotEmpty)
-                    Text(
-                      errorText,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                ],
-              ),
-            );
-          },
+                    if (errorText.isNotEmpty)
+                      Text(
+                        errorText,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
