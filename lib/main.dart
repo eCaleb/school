@@ -2,33 +2,69 @@
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:school/passwordvalidator.dart';
+import 'package:school/passwordvalidator.dart'; // Assuming you have the necessary import for PasswordField
 import 'home.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-List<String> registeredUsers = [];
+class User {
+  final String matricNumber;
+  final String password;
+  final String email;
 
-Future<void> saveRegisteredUsers(List<String> users) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setStringList('registered_users', users);
+  User(this.matricNumber, this.password, this.email);
 }
 
-Future<List<String>> getRegisteredUsers() async {
+List<User> registeredUsers = [];
+
+Future<void> saveRegisteredUsers(List<User> users) async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getStringList('registered_users') ?? [];
+  final userList = users.map((user) => [user.matricNumber, user.password].join(',')).toList();
+  await prefs.setStringList('registered_users', userList);
 }
+
+Future<List<User>> getRegisteredUsers() async {
+  final prefs = await SharedPreferences.getInstance();
+  final userList = prefs.getStringList('registered_users') ?? [];
+
+  if (userList.isNotEmpty) {
+    return userList.map((user) {
+      final parts = user.split(',');
+      if (parts.length == 3) {
+        return User(parts[0], parts[1],parts[2]);
+      } else {
+        // Handle incorrect format, maybe log a message or handle it as appropriate
+        return User('', '','');
+      }
+    }).toList();
+  }
+
+  return [];
+}
+
+
+
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: const LoginPage(),
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case '/login':
+            return MaterialPageRoute(builder: (_) => const LoginPage());
+
+          default:
+            // Handle unknown routes, you can return a default route or throw an exception
+            throw Exception('Unknown route: ${settings.name}');
+        }
+      },
     );
   }
 }
@@ -37,7 +73,6 @@ class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _LoginPageState createState() => _LoginPageState();
 }
 
@@ -56,11 +91,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loadRegisteredUsers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final registeredUsersList = prefs.getStringList('registered_users');
-    if (registeredUsersList != null) {
-      registeredUsers = registeredUsersList;
-    }
+    registeredUsers = await getRegisteredUsers();
   }
 
   void _login() async {
@@ -70,7 +101,9 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (context) {
           return const Center(
-            child: CircularProgressIndicator(color: Colors.blue,),
+            child: CircularProgressIndicator(
+              color: Colors.blue,
+            ),
           );
         },
       );
@@ -83,8 +116,12 @@ class _LoginPageState extends State<LoginPage> {
         // Check if the entered matric number and password match any registered user
         final matricNumber = usernameController.text;
         final password = passwordController.text;
-        if (registeredUsers.contains(matricNumber) &&
-            registeredUsers.contains(password)) {
+
+        final List<User> matchedUsers = registeredUsers
+            .where((user) => user.matricNumber == matricNumber && user.password == password)
+            .toList();
+
+        if (matchedUsers.isNotEmpty) {
           // If a matching user is found, dismiss the loading indicator, clear the error text, and navigate to the home page
           Navigator.of(context).pop();
           setState(() {
@@ -115,7 +152,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  List<String> registeredUsers = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,10 +168,11 @@ class _LoginPageState extends State<LoginPage> {
                     Padding(
                       padding: const EdgeInsets.only(top: 30, bottom: 50),
                       child: Center(
-                          child: Image.asset(
-                        "assets/images/bowen.png",
-                        height: 100,
-                      )),
+                        child: Image.asset(
+                          "assets/images/bowen.png",
+                          height: 100,
+                        ),
+                      ),
                     ),
                     Focus(
                       onFocusChange: (hasFocus) {
@@ -153,9 +190,6 @@ class _LoginPageState extends State<LoginPage> {
                               borderSide: BorderSide(color: Colors.blue)),
                           labelStyle: TextStyle(
                             color: notFocused ? Colors.black : Colors.blue,
-                            fontWeight: notFocused
-                                ? FontWeight.normal
-                                : FontWeight.bold,
                           ),
                         ),
                         inputFormatters: [
@@ -233,7 +267,9 @@ class _LoginPageState extends State<LoginPage> {
                     if (errorText.isNotEmpty)
                       Text(
                         errorText,
-                        style: const TextStyle(color: Colors.red),
+                       
+
+ style: const TextStyle(color: Colors.red),
                       ),
                   ],
                 ),
@@ -256,14 +292,10 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   TextEditingController matricNumberController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+    TextEditingController emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String errorText = '';
   bool notFocused = true;
-
-  Future<void> _saveRegisteredUsers() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('registered_users', registeredUsers);
-  }
 
   @override
   void initState() {
@@ -273,11 +305,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _loadRegisteredUsers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final registeredUsersList = prefs.getStringList('registered_users');
-    if (registeredUsersList != null) {
-      registeredUsers = registeredUsersList;
-    }
+    registeredUsers = await getRegisteredUsers();
   }
 
   void _register() async {
@@ -288,10 +316,10 @@ class _RegisterPageState extends State<RegisterPage> {
         await Future.delayed(const Duration(seconds: 2));
 
         // Add the new user to the registeredUsers list
+        final newUser = User(matricNumberController.text, passwordController.text,emailController.text);
         setState(() {
-          registeredUsers.add(matricNumberController.text);
-          registeredUsers.add(passwordController.text);
-          _saveRegisteredUsers();
+          registeredUsers.add(newUser);
+          saveRegisteredUsers(registeredUsers);
         });
 
         // Show a success message
@@ -335,12 +363,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   });
                 },
                 child: TextFormField(
-                  style: TextStyle(color: notFocused? Colors.black : Colors.blue),
+                  style:
+                      TextStyle(color: notFocused ? Colors.black : Colors.blue),
                   controller: matricNumberController,
-                  decoration:  InputDecoration(
-                    labelText: 'Matric Number',
-                    labelStyle: TextStyle(color: notFocused? Colors.black : Colors.blue)
-                  ),
+                  decoration: InputDecoration(
+                      labelText: 'Matric Number',
+                      labelStyle: TextStyle(
+                          color: notFocused ? Colors.black : Colors.blue)),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
                   ],
@@ -351,6 +380,29 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (value.length < 11 || value.length > 11) {
                       return 'Matric number must be 11 characters or less';
                     }
+                    return null;
+                  },
+                ),
+              ),
+              Focus(
+                onFocusChange: (hasFocus) {
+                  setState(() {
+                    notFocused = !hasFocus;
+                  });
+                },
+                child: TextFormField(
+                  style:
+                      TextStyle(color: notFocused ? Colors.black : Colors.blue),
+                  controller: emailController,
+                  decoration: InputDecoration(
+                      labelText: 'Email', // Add this line
+                      labelStyle: TextStyle(
+                          color: notFocused ? Colors.black : Colors.blue)),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your email'; // Add this line
+                    }
+                    // Add additional email validation if needed
                     return null;
                   },
                 ),
