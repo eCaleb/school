@@ -1,6 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:school/pages/elearning.dart';
+import 'package:school/pages/hostelmanagement.dart';
+import 'package:school/pages/payment.dart';
+import 'package:school/pages/registration.dart';
+import 'package:school/pages/result.dart';
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -14,8 +19,8 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _children = [
     const CourseRegistration(),
-    const FeePayment(),
-    const ELearning(),
+    Payment(),
+    const Elearning(),
     const ResultProcessing(),
     const HostelManagement()
   ];
@@ -63,15 +68,15 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Logout'),
+        return AlertDialog(backgroundColor: const Color.fromARGB(255, 194, 225, 253),
+          title: const Text('Logout',),
           content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Cancel',style: TextStyle(color: Colors.black),),
             ),
             TextButton(
               onPressed: () {
@@ -81,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                 // Clear any stored user data
                 // ...
               },
-              child: const Text('Logout'),
+              child: const Text('Logout',style: TextStyle(color: Colors.black),),
             ),
           ],
         );
@@ -93,7 +98,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: const Text('Student Portal'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -165,7 +170,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.payment, color: Colors.white),
-            label: 'Fee Payment',
+            label: 'Payment',
             backgroundColor: Colors.blue,
           ),
           BottomNavigationBarItem(
@@ -233,76 +238,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class CourseRegistration extends StatelessWidget {
-  const CourseRegistration({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Course Registration',
-        style: TextStyle(color: Theme.of(context).primaryColor),
-      ),
-    );
-  }
-}
-
-class FeePayment extends StatelessWidget {
-  const FeePayment({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Fee Payment',
-        style: TextStyle(color: Theme.of(context).primaryColor),
-      ),
-    );
-  }
-}
-
-class ELearning extends StatelessWidget {
-  const ELearning({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'E-Learning',
-        style: TextStyle(color: Theme.of(context).primaryColor),
-      ),
-    );
-  }
-}
-
-class ResultProcessing extends StatelessWidget {
-  const ResultProcessing({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Result Processing',
-        style: TextStyle(color: Theme.of(context).primaryColor),
-      ),
-    );
-  }
-}
-
-class HostelManagement extends StatelessWidget {
-  const HostelManagement({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Hostel Management',
-        style: TextStyle(color: Theme.of(context).primaryColor),
       ),
     );
   }
