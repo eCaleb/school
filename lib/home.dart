@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _children = [
     const CourseRegistration(),
-    Payment(),
+   const PaymentSection(),
     const Elearning(),
     const ResultProcessing(),
     const HostelManagement()
@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Portal'),
+        title: const Text('Bowen Student Portal'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),

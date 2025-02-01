@@ -45,11 +45,11 @@ class ResultProcessingState extends State<ResultProcessing> {
     );
   }
 
-  Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
+ Future<void> _launchURL(String url) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: url,
+    );
+    await launchUrl(launchUri);
   }
 }

@@ -42,7 +42,7 @@ Future<List<User>> getRegisteredUsers() async {
 
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -80,7 +80,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -162,125 +162,122 @@ void _login() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 30, bottom: 50),
-                      child: Center(
-                        child: Image.asset(
-                          "assets/images/bowen.png",
-                          height: 100,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom:58.0),
+                        child: Image.asset("assets/images/campushd.png"),
+                      ),
+                      Focus(
+                        onFocusChange: (hasFocus) {
+                          setState(() {
+                            notFocused = !hasFocus;
+                          });
+                        },
+                        child: TextFormField(
+                          style: TextStyle(
+                              color: notFocused ? Colors.black : Colors.blue),
+                          controller: usernameController,
+                          decoration: InputDecoration(
+                            labelText: 'Matric Number',
+                            focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.blue)),
+                            labelStyle: TextStyle(
+                              color: notFocused ? Colors.black : Colors.blue,
+                            ),
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp('[a-zA-Z0-9]')),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              usernameController.clear();
+                              return 'Please enter your matric number';
+                            }
+                            if (value.length < 11 || value.length > 11) {
+                              usernameController.clear();
+                              return 'Matric number must be 11 characters or less';
+                            }
+                            return null;
+                          },
                         ),
                       ),
-                    ),
-                    Focus(
-                      onFocusChange: (hasFocus) {
-                        setState(() {
-                          notFocused = !hasFocus;
-                        });
-                      },
-                      child: TextFormField(
-                        style: TextStyle(
-                            color: notFocused ? Colors.black : Colors.blue),
-                        controller: usernameController,
-                        decoration: InputDecoration(
-                          labelText: 'Matric Number',
-                          focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.blue)),
-                          labelStyle: TextStyle(
-                            color: notFocused ? Colors.black : Colors.blue,
-                          ),
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp('[a-zA-Z0-9]')),
-                        ],
+                      const SizedBox(height: 20),
+                      PasswordField(
+                        controller: passwordController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            usernameController.clear();
-                            return 'Please enter your matric number';
+                            passwordController.clear();
+                            return 'Please enter your password';
                           }
-                          if (value.length < 11 || value.length > 11) {
-                            usernameController.clear();
-                            return 'Matric number must be 11 characters or less';
+                          if (value.length < 8) {
+                            passwordController.clear();
+                            return 'Password must be at least 8 characters';
+                          }
+                          if (!value.contains(RegExp(r'[A-Za-z]')) ||
+                              !value.contains(RegExp(r'\d'))) {
+                            passwordController.clear();
+                            return 'Password must include both letters and numbers';
                           }
                           return null;
                         },
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    PasswordField(
-                      controller: passwordController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          passwordController.clear();
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 8) {
-                          passwordController.clear();
-                          return 'Password must be at least 8 characters';
-                        }
-                        if (!value.contains(RegExp(r'[A-Za-z]')) ||
-                            !value.contains(RegExp(r'\d'))) {
-                          passwordController.clear();
-                          return 'Password must include both letters and numbers';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        _login();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.only(
-                          left: 50,
-                          right: 50,
-                          top: 15,
-                          bottom: 15,
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          _login();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.only(
+                            left: 50,
+                            right: 50,
+                            top: 15,
+                            bottom: 15,
+                          ),
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.blue,
                         ),
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue,
+                        child: const Text('Login'),
                       ),
-                      child: const Text('Login'),
-                    ),
-                    const SizedBox(height: 20),
-                    TextButton(
-                      style: const ButtonStyle(overlayColor: MaterialStatePropertyAll(Colors.transparent)),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const RegisterPage()),
-                        ).then((value) {
-                          setState(() {
-                            errorText = '';
+                      const SizedBox(height: 20),
+                      TextButton(
+                        style: const ButtonStyle(overlayColor: MaterialStatePropertyAll(Colors.transparent)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const RegisterPage()),
+                          ).then((value) {
+                            setState(() {
+                              errorText = '';
+                            });
                           });
-                        });
-                      },
-                      child: const Text(
-                        'Don\'t have an account? Register',
-                        style: TextStyle(color: Colors.blue),
+                        },
+                        child: const Text(
+                          'Don\'t have an account? Register',
+                          style: TextStyle(color: Colors.blue),
+                        ),
                       ),
-                    ),
-                    if (errorText.isNotEmpty)
-                      Text(
-                        errorText,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                  ],
-                ),
-              );
-            },
+                      if (errorText.isNotEmpty)
+                        Text(
+                          errorText,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -289,7 +286,7 @@ void _login() async {
 }
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({super.key});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -475,6 +472,7 @@ bool emailNotFocused = true;
     );
   }
 }
+
 
 bool validateInputs(String matricNumber, String password) {
   // Check if the matricNumber is up to 11 characters
