@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:school/account_store.dart';
 import 'package:school/passwordvalidator.dart'; // Assuming you have the necessary import for PasswordField
 import 'home.dart';
 
@@ -9,36 +9,9 @@ void main() {
   runApp(const MyApp());
 }
 
-class User {
-  final String matricNumber;
-  final String password;
-  final String email;
-
-  User(this.matricNumber, this.password, this.email);
-}
+final AccountStore accountStore = AccountStore();
 
 List<User> registeredUsers = [];
-
-Future<void> saveRegisteredUsers(List<User> users) async {
-  final prefs = await SharedPreferences.getInstance();
-  final userList = users.map((user) => '${user.matricNumber},${user.password},${user.email}').toList();
-  await prefs.setStringList('registered_users', userList);
-}
-
-Future<List<User>> getRegisteredUsers() async {
-  final prefs = await SharedPreferences.getInstance();
-  final userList = prefs.getStringList('registered_users') ?? [];
-
-  return userList.map((user) {
-    final parts = user.split(',');
-    if (parts.length == 3) {
-      return User(parts[0], parts[1], parts[2]);
-    } else {
-      // Handle incorrect format, maybe log a message or handle it as appropriate
-      return User('', '', '');
-    }
-  }).toList();
-}
 
 
 class MyApp extends StatefulWidget {
@@ -52,12 +25,12 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    // Load registered users from file
+    // Load registered users from secure storage
     _loadRegisteredUsers();
   }
 
   Future<void> _loadRegisteredUsers() async {
-    registeredUsers = await getRegisteredUsers();
+    registeredUsers = await accountStore.load();
   }
 
   @override
@@ -115,34 +88,30 @@ void _login() async {
 
     // Perform login logic here
     try {
-      // Simulate a delay for login logic
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Check if the entered matric number and password match any registered user
+      // Find the account, then check the password against its salted hash
       final matchedUsers = registeredUsers
-          .where((user) =>
-              user.matricNumber.toLowerCase() == matricNumber &&
-              user.password == password)
+          .where((user) => user.matricNumber == matricNumber)
           .toList();
+      final passwordMatches = matchedUsers.isNotEmpty &&
+          await AccountStore.verifyPassword(matchedUsers.first, password);
 
-      if (matchedUsers.isNotEmpty) {
-        // If a matching user is found, dismiss the loading indicator, clear the error text, and navigate to the home page
+      if (passwordMatches) {
+        // Dismiss the loading indicator, clear the error text, and navigate to the home page
         Navigator.of(context).pop();
         setState(() {
           errorText = '';
         });
-         // Save the updated registered users list
-          await saveRegisteredUsers(registeredUsers);
 
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomePage()),
           (Route<dynamic> route) => false,
         );
       } else {
-        // If no matching user is found, dismiss the loading indicator and update the error text
+        // Same message whether the account or the password is wrong, so the
+        // screen doesn't reveal which matric numbers are registered
         Navigator.of(context).pop();
         setState(() {
-          errorText = "Account doesn't exist, please register.";
+          errorText = 'Incorrect matric number or password.';
           usernameController.clear();
           passwordController.clear();
         });
@@ -153,7 +122,7 @@ void _login() async {
 
       // Update error text
       setState(() {
-        errorText = "Account doesn't exist, please register.";
+        errorText = 'Incorrect matric number or password.';
       });
     }
   }
@@ -303,26 +272,39 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-    // Load registered users from file
+    // Load registered users from secure storage
     _loadRegisteredUsers();
   }
 
   Future<void> _loadRegisteredUsers() async {
-    registeredUsers = await getRegisteredUsers();
+    registeredUsers = await accountStore.load();
   }
 
  void _register() async {
   if (_formKey.currentState!.validate()) {
     // Perform registration logic here
     try {
-      // Simulate a delay for registration logic
-      await Future.delayed(const Duration(seconds: 2));
+      final matricNumber = matricNumberController.text.toLowerCase();
 
-      // Add the new user to the registeredUsers list
-      final newUser = User(matricNumberController.text, passwordController.text, emailController.text);
+      // Don't let anyone register a matric number that already has an
+      // account, otherwise they could set their own password for it
+      if (registeredUsers.any((user) => user.matricNumber == matricNumber)) {
+        setState(() {
+          errorText = 'An account with this matric number already exists.';
+        });
+        return;
+      }
+
+      // Store a salted hash of the password, never the password itself
+      final newUser = await accountStore.createUser(
+        matricNumber: matricNumber,
+        email: emailController.text,
+        password: passwordController.text,
+      );
+      registeredUsers.add(newUser);
+      await accountStore.save(registeredUsers);
       setState(() {
-        registeredUsers.add(newUser);
-        saveRegisteredUsers(registeredUsers); // Save the updated registeredUsers list
+        errorText = '';
       });
 
       // Show a success message

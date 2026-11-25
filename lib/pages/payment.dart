@@ -87,80 +87,47 @@ class _PaymentSectionState extends State<PaymentSection> {
   }
 }
 
-class PaymentForm extends StatefulWidget {
+/// Demo payment sheet. It deliberately has no card fields: a real portal
+/// would hand payment to a provider's own checkout or SDK, so card details
+/// never pass through this app.
+class PaymentForm extends StatelessWidget {
   final PaymentItem payment;
 
   const PaymentForm({super.key, required this.payment});
 
   @override
-  _PaymentFormState createState() => _PaymentFormState();
-}
-
-class _PaymentFormState extends State<PaymentForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _cardNumberController = TextEditingController();
-  final _expirationDateController = TextEditingController();
-  final _cvvController = TextEditingController();
-
-  @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: MediaQuery.of(context).viewInsets,
-      child: SizedBox(
-        height: 250,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _cardNumberController,
-                  decoration: const InputDecoration(labelText: 'Card Number'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your card number';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _expirationDateController,
-                  decoration: const InputDecoration(labelText: 'Expiration Date'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your expiration date';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _cvvController,
-                  decoration: const InputDecoration(labelText: 'CVV'),
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Please enter your CVV';
-                    }
-                    return null;
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Here you can integrate with your payment gateway or API to process the payment
-// For demonstration purposes, we'll just print a message indicating that the payment was successful
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Payment of \$${widget.payment.amount.toStringAsFixed(2)} successful')),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text('Pay'),
-                ),
-              ],
-            ),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            '${payment.description}: \$${payment.amount.toStringAsFixed(2)}',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        ),
+          const SizedBox(height: 10),
+          const Text(
+            'This is a demo, so no card details are collected and no money '
+            'is taken. A real portal would send you to a payment provider\'s '
+            'own checkout.',
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Demo payment of \$${payment.amount.toStringAsFixed(2)} recorded',
+                  ),
+                ),
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Confirm demo payment'),
+          ),
+        ],
       ),
     );
   }
