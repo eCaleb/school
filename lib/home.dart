@@ -80,11 +80,11 @@ class _HomePageState extends State<HomePage> {
             ),
             TextButton(
               onPressed: () {
-                // Perform logout logic here
+                // Close the dialog, then clear the navigation stack so the
+                // back button can't return to the logged-in screens
                 Navigator.of(context).pop();
-                Navigator.pushNamed(context, '/login');
-                // Clear any stored user data
-                // ...
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/login', (route) => false);
               },
               child: const Text('Logout',style: TextStyle(color: Colors.black),),
             ),

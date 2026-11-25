@@ -9,7 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  crypto: ^3.0.3
   flutter_downloader: ^1.11.6
+  flutter_secure_storage: ^9.2.2
   path_provider: ^2.1.2
   shared_preferences: ^2.2.2
   url_launcher: ^6.2.4
